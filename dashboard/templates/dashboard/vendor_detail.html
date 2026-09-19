@@ -1,0 +1,109 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Vendor: {{ vendor.name }} — QuickBook Staff{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard-vendors' %}" class="btn btn-sm btn-outline-secondary mb-3 d-inline-flex align-items-center gap-1">
+        <i class="bi bi-arrow-left"></i> <span>Back to Vendor Directory</span>
+    </a>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">{{ vendor.name }}</h4>
+            <p class="text-muted small mb-0"><i class="bi bi-calendar3 me-1"></i>Vendor registered on {{ vendor.created_at|date:"M d, Y" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard-vendor-edit' vendor.id %}" class="btn btn-primary btn-sm px-3 shadow-sm d-inline-flex align-items-center gap-1">
+                <i class="bi bi-pencil-square"></i> <span>Edit Vendor</span>
+            </a>
+            <a href="{% url 'dashboard-event-add' %}" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center gap-1">
+                <i class="bi bi-plus-lg"></i> <span>Create Event</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Vendor Info -->
+    <div class="col-lg-4">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shop me-2 text-primary"></i>Vendor Information</h6>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Organization</span>
+                    <span class="fw-semibold text-dark">{{ vendor.name }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Email Address</span>
+                    <span class="text-dark">{{ vendor.email|default:"Not specified" }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Phone Number</span>
+                    <span class="text-dark">{{ vendor.phone|default:"Not specified" }}</span>
+                </div>
+                <div class="list-group-item px-0 py-2 border-0">
+                    <span class="text-muted small d-block mb-1">Business Address</span>
+                    <span class="small text-dark">{{ vendor.address|default:"No physical address registered" }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Total Hosted Events</span>
+                    <span class="badge bg-light text-dark border">{{ events.count }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vendor's Events -->
+    <div class="col-lg-8">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-event me-2 text-warning"></i>Hosted Events</h6>
+                <span class="badge bg-light text-muted border">{{ events.count }} events</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Schedule</th>
+                            <th>Capacity</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td class="fw-semibold text-dark">{{ event.title }}</td>
+                            <td class="small text-muted">{{ event.start_datetime|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark border font-monospace">{{ event.available_seats }}/{{ event.total_seats }}</span>
+                            </td>
+                            <td>
+                                {% if event.is_active %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'dashboard-event-edit' event.id %}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-pencil"></i> <span>Edit</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar-x fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                                <p class="mb-0 fw-medium">No events hosted by this vendor yet.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

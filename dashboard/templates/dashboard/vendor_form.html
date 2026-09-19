@@ -1,0 +1,69 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{{ action_title }} — QuickBook Staff{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard-vendors' %}" class="btn btn-sm btn-outline-secondary mb-3 d-inline-flex align-items-center gap-1">
+        <i class="bi bi-arrow-left"></i> <span>Back to Vendors</span>
+    </a>
+    <h4 class="fw-bold text-dark mb-1">{{ action_title }}</h4>
+    <p class="text-muted small mb-0">Fill in the organizer/venue profile details below.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-7 col-xl-6">
+        <div class="card p-4 shadow-sm border-0">
+            <form method="POST">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 small mb-3">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Vendor Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-secondary">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-secondary">Business / Venue Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <div class="text-danger small mt-1">{{ form.address.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a href="{% url 'dashboard-vendors' %}" class="btn btn-outline-secondary px-3">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-check2-circle"></i> <span>Save Vendor</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

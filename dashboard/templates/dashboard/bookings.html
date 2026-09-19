@@ -1,0 +1,110 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Booking Audit Log — QuickBook Staff{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold text-dark mb-1">Booking Management</h4>
+        <p class="text-muted small mb-0">Audit customer reservations, quantity breakdown, and lifecycle statuses.</p>
+    </div>
+</div>
+
+<div class="card p-4 shadow-sm border-0 mb-4">
+    <!-- Filter Bar -->
+    <form method="GET" action="{% url 'dashboard-bookings' %}" class="row g-2 mb-4 align-items-center">
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Booking Statuses</option>
+                <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>Confirmed Reservations Only</option>
+                <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelled Reservations Only</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            {% if status_filter %}
+                <a href="{% url 'dashboard-bookings' %}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Customer</th>
+                    <th>Event Details</th>
+                    <th>Organizer</th>
+                    <th>Tickets</th>
+                    <th>Status</th>
+                    <th>Booked At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td class="fw-bold text-muted small font-monospace">#{{ booking.id }}</td>
+                    <td>
+                        <a href="{% url 'dashboard-customer-detail' booking.user.id %}" class="text-decoration-none fw-semibold text-primary">
+                            {{ booking.user.first_name }} {{ booking.user.last_name }}
+                        </a>
+                        <div class="small text-muted">{{ booking.user.email }}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ booking.event.title }}</div>
+                        <div class="small text-muted">{{ booking.event.start_datetime|date:"M d, Y H:i" }}</div>
+                    </td>
+                    <td class="small text-muted">{{ booking.event.vendor.name }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2 py-1 font-monospace">{{ booking.quantity }} seats</span>
+                    </td>
+                    <td>
+                        {% if booking.status == 'CONFIRMED' %}
+                            <span class="badge badge-confirmed">CONFIRMED</span>
+                        {% else %}
+                            <span class="badge badge-cancelled">CANCELLED</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ booking.created_at|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-ticket-perforated fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        <p class="mb-0 fw-medium">No bookings matching criteria found.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if bookings.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+            {% if bookings.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ bookings.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for p in bookings.paginator.page_range %}
+                {% if bookings.number == p %}
+                    <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ p }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if bookings.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ bookings.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

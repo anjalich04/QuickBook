@@ -1,0 +1,134 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Event Management — QuickBook Staff{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold text-dark mb-1">Event Management</h4>
+        <p class="text-muted small mb-0">Monitor scheduled events, seat allocations, organizers, and active states.</p>
+    </div>
+    <a href="{% url 'dashboard-event-add' %}" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1 shadow-sm">
+        <i class="bi bi-plus-lg"></i> Add New Event
+    </a>
+</div>
+
+<div class="card p-4 shadow-sm border-0 mb-4">
+    <!-- Filter & Search Toolbar -->
+    <form method="GET" action="{% url 'dashboard-events' %}" class="row g-2 mb-4 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Search title, venue..." value="{{ search_query }}">
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <select name="vendor" class="form-select">
+                <option value="">All Organizers / Vendors</option>
+                {% for v in vendors %}
+                    <option value="{{ v.id }}" {% if vendor_filter == v.id|stringformat:"s" %}selected{% endif %}>{{ v.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Events Only</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive Events Only</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            {% if search_query or vendor_filter or status_filter %}
+                <a href="{% url 'dashboard-events' %}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Event Details</th>
+                    <th>Organizer</th>
+                    <th>Location</th>
+                    <th>Schedule</th>
+                    <th>Seat Capacity</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ event.title }}</div>
+                        <div class="small text-muted text-truncate" style="max-width: 200px;">{{ event.description|default:"No description provided" }}</div>
+                    </td>
+                    <td class="small fw-medium text-dark">{{ event.vendor.name }}</td>
+                    <td class="small text-muted">{{ event.location|default:"-" }}</td>
+                    <td class="small">
+                        <div class="text-dark">{{ event.start_datetime|date:"M d, Y H:i" }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">to {{ event.end_datetime|date:"M d, H:i" }}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border font-monospace">
+                            {{ event.available_seats }} / {{ event.total_seats }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if event.is_active %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'dashboard-event-edit' event.id %}" class="btn btn-sm btn-outline-primary shadow-sm d-inline-flex align-items-center gap-1" title="Edit Event">
+                            <i class="bi bi-pencil-square"></i> <span>Edit</span>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar2-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        <p class="mb-0 fw-medium">No events matching the selected filters found.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if events.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+            {% if events.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ events.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if vendor_filter %}&vendor={{ vendor_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for p in events.paginator.page_range %}
+                {% if events.number == p %}
+                    <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}{% if vendor_filter %}&vendor={{ vendor_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if events.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ events.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if vendor_filter %}&vendor={{ vendor_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

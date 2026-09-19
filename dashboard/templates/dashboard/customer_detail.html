@@ -1,0 +1,272 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Customer: {{ customer.email }} — QuickBook Staff{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tree-node-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        display: inline-block;
+        min-width: 240px;
+    }
+    .branch-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'dashboard-customers' %}" class="btn btn-sm btn-outline-secondary mb-3 d-inline-flex align-items-center gap-1">
+        <i class="bi bi-arrow-left"></i> <span>Back to Customer Directory</span>
+    </a>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <div>
+            <h4 class="fw-bold text-dark mb-1">{{ customer.first_name }} {{ customer.last_name }}</h4>
+            <p class="text-muted small mb-0"><i class="bi bi-envelope me-1"></i>{{ customer.email }} &bull; Member since {{ customer.date_joined|date:"M d, Y" }}</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark border p-2 font-monospace fs-6">
+                Code: <strong>{{ customer.referral_code }}</strong>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Customer Profile Information -->
+    <div class="col-lg-4">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Profile Details</h6>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Full Name</span>
+                    <span class="fw-medium text-dark">{{ customer.first_name }} {{ customer.last_name }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Email Address</span>
+                    <span class="fw-medium text-dark text-truncate" style="max-width: 170px;">{{ customer.email }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Tree Position</span>
+                    <span>
+                        {% if customer.referral_position %}
+                            <span class="badge {% if customer.referral_position == 'LEFT' %}badge-left{% else %}badge-right{% endif %}">
+                                {{ customer.referral_position }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border">Root / Top</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Tree Parent</span>
+                    <span class="small fw-medium">{{ customer.referred_by.email|default:"None (Root)" }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Original Sponsor</span>
+                    <span class="small fw-medium">{{ customer.sponsor.email|default:"None" }}</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                    <span class="text-muted small">Account Status</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active Customer</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Referral Team Statistics -->
+    <div class="col-lg-4">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-diagram-3-fill me-2 text-success"></i>Binary Network Stats</h6>
+            <div class="row g-2 text-center my-auto py-2">
+                <div class="col-4">
+                    <div class="p-2 p-sm-3 border rounded-3 bg-light">
+                        <span class="text-muted small fw-semibold d-block text-uppercase" style="font-size: 0.7rem;">Left Team</span>
+                        <h4 class="fw-bold text-primary my-1">{{ stats.left_team_count }}</h4>
+                        <small class="text-muted" style="font-size: 0.7rem;">descendants</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 p-sm-3 border rounded-3 bg-light">
+                        <span class="text-muted small fw-semibold d-block text-uppercase" style="font-size: 0.7rem;">Right Team</span>
+                        <h4 class="fw-bold text-success my-1">{{ stats.right_team_count }}</h4>
+                        <small class="text-muted" style="font-size: 0.7rem;">descendants</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 p-sm-3 border rounded-3 bg-light">
+                        <span class="text-muted small fw-semibold d-block text-uppercase" style="font-size: 0.7rem;">Total Team</span>
+                        <h4 class="fw-bold text-dark my-1">{{ stats.total_team_count }}</h4>
+                        <small class="text-muted" style="font-size: 0.7rem;">members</small>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 p-2 bg-light rounded-3 small">
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Direct Left Child:</span>
+                    <strong>{{ stats.direct_left.email|default:"Empty" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Direct Right Child:</span>
+                    <strong>{{ stats.direct_right.email|default:"Empty" }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Bookings -->
+    <div class="col-lg-4">
+        <div class="card p-4 h-100 shadow-sm border-0">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-ticket-perforated-fill me-2 text-danger"></i>Booking History</h6>
+            <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                        <tr>
+                            <td class="small fw-semibold text-truncate" style="max-width: 130px;">{{ b.event.title }}</td>
+                            <td class="small font-monospace">{{ b.quantity }}</td>
+                            <td>
+                                {% if b.status == 'CONFIRMED' %}
+                                    <span class="badge badge-confirmed" style="font-size: 0.7rem;">CONFIRMED</span>
+                                {% else %}
+                                    <span class="badge badge-cancelled" style="font-size: 0.7rem;">CANCELLED</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4 small">
+                                <i class="bi bi-ticket fs-4 d-block mb-1 text-secondary opacity-50"></i>
+                                No bookings made yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Binary Referral Tree Visual -->
+<div class="card p-4 shadow-sm border-0">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-diagram-2-fill me-2 text-primary"></i>Binary Referral Tree Structure</h6>
+        <span class="badge bg-light text-muted border">Deterministic BFS Level-Order</span>
+    </div>
+
+    <div class="p-4 bg-light border rounded-3 overflow-auto" style="min-height: 250px;">
+        {% if tree %}
+            <div class="tree-container">
+                <!-- Root User Card -->
+                <div class="tree-node-card mb-3 border-2 border-primary">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-person-circle fs-3 text-primary"></i>
+                        <div>
+                            <div class="fw-bold text-dark">{{ tree.first_name }} {{ tree.last_name }}</div>
+                            <small class="text-muted font-monospace">{{ tree.email }} &bull; {{ tree.referral_code }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Children Container -->
+                <div class="row g-4 ms-2 border-start border-2 ps-3 pt-2">
+                    <!-- Left Subtree -->
+                    <div class="col-md-6">
+                        <div class="branch-card">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge badge-left px-2 py-1">LEFT BRANCH</span>
+                                {% if tree.left %}
+                                    <a href="{% url 'dashboard-customer-detail' tree.left.id %}" class="fw-semibold text-primary text-decoration-none small">
+                                        {{ tree.left.first_name }} {{ tree.left.last_name }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small fst-italic">Open Slot (Available)</span>
+                                {% endif %}
+                            </div>
+
+                            {% if tree.left %}
+                                <div class="small text-muted mb-2">
+                                    <i class="bi bi-envelope me-1"></i>{{ tree.left.email }} &bull; <span class="font-monospace">{{ tree.left.referral_code }}</span>
+                                </div>
+                                {% if tree.left.left or tree.left.right %}
+                                    <div class="ms-3 border-start ps-3 py-2 bg-light rounded small">
+                                        {% if tree.left.left %}
+                                            <div class="mb-1 d-flex align-items-center">
+                                                <span class="badge badge-left me-1" style="font-size: 0.65rem;">L</span>
+                                                <a href="{% url 'dashboard-customer-detail' tree.left.left.id %}" class="text-dark text-decoration-none">{{ tree.left.left.first_name }} ({{ tree.left.left.email }})</a>
+                                            </div>
+                                        {% endif %}
+                                        {% if tree.left.right %}
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-right me-1" style="font-size: 0.65rem;">R</span>
+                                                <a href="{% url 'dashboard-customer-detail' tree.left.right.id %}" class="text-dark text-decoration-none">{{ tree.left.right.first_name }} ({{ tree.left.right.email }})</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Right Subtree -->
+                    <div class="col-md-6">
+                        <div class="branch-card">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge badge-right px-2 py-1">RIGHT BRANCH</span>
+                                {% if tree.right %}
+                                    <a href="{% url 'dashboard-customer-detail' tree.right.id %}" class="fw-semibold text-success text-decoration-none small">
+                                        {{ tree.right.first_name }} {{ tree.right.last_name }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small fst-italic">Open Slot (Available)</span>
+                                {% endif %}
+                            </div>
+
+                            {% if tree.right %}
+                                <div class="small text-muted mb-2">
+                                    <i class="bi bi-envelope me-1"></i>{{ tree.right.email }} &bull; <span class="font-monospace">{{ tree.right.referral_code }}</span>
+                                </div>
+                                {% if tree.right.left or tree.right.right %}
+                                    <div class="ms-3 border-start ps-3 py-2 bg-light rounded small">
+                                        {% if tree.right.left %}
+                                            <div class="mb-1 d-flex align-items-center">
+                                                <span class="badge badge-left me-1" style="font-size: 0.65rem;">L</span>
+                                                <a href="{% url 'dashboard-customer-detail' tree.right.left.id %}" class="text-dark text-decoration-none">{{ tree.right.left.first_name }} ({{ tree.right.left.email }})</a>
+                                            </div>
+                                        {% endif %}
+                                        {% if tree.right.right %}
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-right me-1" style="font-size: 0.65rem;">R</span>
+                                                <a href="{% url 'dashboard-customer-detail' tree.right.right.id %}" class="text-dark text-decoration-none">{{ tree.right.right.first_name }} ({{ tree.right.right.email }})</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No referral network data available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

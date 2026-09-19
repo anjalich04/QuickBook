@@ -1,0 +1,107 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Vendor Directory — QuickBook Staff{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold text-dark mb-1">Vendor Management</h4>
+        <p class="text-muted small mb-0">Manage venue providers, event organizers, and partners.</p>
+    </div>
+    <a href="{% url 'dashboard-vendor-add' %}" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1 shadow-sm">
+        <i class="bi bi-plus-lg"></i> Add New Vendor
+    </a>
+</div>
+
+<div class="card p-4 shadow-sm border-0 mb-4">
+    <!-- Search Bar -->
+    <form method="GET" action="{% url 'dashboard-vendors' %}" class="row g-2 mb-4">
+        <div class="col-md-6 col-lg-5">
+            <div class="input-group">
+                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Search by name, email..." value="{{ search_query }}">
+                {% if search_query %}
+                    <a href="{% url 'dashboard-vendors' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary px-4">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Vendor Name</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Events Hosted</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vendor in vendors %}
+                <tr>
+                    <td class="fw-semibold">
+                        <a href="{% url 'dashboard-vendor-detail' vendor.id %}" class="text-decoration-none text-dark fw-bold d-inline-flex align-items-center gap-1">
+                            <i class="bi bi-shop text-primary"></i> {{ vendor.name }}
+                        </a>
+                    </td>
+                    <td class="small text-muted">{{ vendor.email|default:"-" }}</td>
+                    <td class="small text-muted">{{ vendor.phone|default:"-" }}</td>
+                    <td class="small text-muted text-truncate" style="max-width: 220px;">{{ vendor.address|default:"-" }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2 py-1">{{ vendor.events.count }} events</span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a href="{% url 'dashboard-vendor-detail' vendor.id %}" class="btn btn-sm btn-outline-secondary" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'dashboard-vendor-edit' vendor.id %}" class="btn btn-sm btn-outline-primary shadow-sm" title="Edit Vendor">
+                                <i class="bi bi-pencil-square me-1"></i> Edit
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-shop-window fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        <p class="mb-0 fw-medium">No vendors found matching criteria.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if vendors.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+            {% if vendors.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ vendors.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for p in vendors.paginator.page_range %}
+                {% if vendors.number == p %}
+                    <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ p }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if vendors.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ vendors.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

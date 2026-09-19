@@ -1,0 +1,53 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Staff Login — QuickBook{% endblock %}
+
+{% block unauth_content %}
+<div class="col-11 col-sm-9 col-md-7 col-lg-4 col-xl-3">
+    <div class="card p-4 p-sm-5 shadow-sm border" style="border-radius: 12px;">
+        <div class="text-center mb-4">
+            <h4 class="fw-bold text-dark mb-1">QuickBook</h4>
+            <p class="text-secondary small mb-0">Staff Login</p>
+        </div>
+
+        <form method="POST" action="{% url 'dashboard-login' %}">
+            {% csrf_token %}
+            {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 small mb-3">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="id_email" class="form-label small fw-semibold text-secondary">Email</label>
+                <input type="email" name="email" id="id_email" class="form-control" placeholder="staff@quickbook.com" required autofocus>
+                {% if form.email.errors %}
+                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="id_password" class="form-label small fw-semibold text-secondary">Password</label>
+                <input type="password" name="password" id="id_password" class="form-control" placeholder="••••••••" required>
+                {% if form.password.errors %}
+                    <div class="text-danger small mt-1">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-medium shadow-sm">
+                Sign In
+            </button>
+        </form>
+
+        <div class="text-center mt-3 pt-2">
+            <a href="/" class="small text-muted text-decoration-none">
+                Back to QuickBook
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
