@@ -1,8 +1,8 @@
 # QuickBook
 
-A Django REST Framework backend for an event booking platform — built as a machine test assignment.
+A Django REST Framework backend for an event booking platform.
 
-QuickBook lets customers browse and book event tickets, and includes a binary referral network and a custom staff dashboard for managing vendors, events, and bookings.
+QuickBook allows customers to browse and book event tickets, with a binary referral network and a custom staff dashboard for managing vendors, events, and bookings.
 
 ## Features
 
